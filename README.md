@@ -13,6 +13,7 @@ The hierarchy tree can be show from bottom up or from top to bottom.
 
 Example:
 
+```
 $ ./nettree.sh -u
 eth3
     bond1
@@ -44,3 +45,4 @@ bond0
        lupen3
 lxcbr0
 virbr0
+```
