@@ -2,6 +2,7 @@
 
 DEFAULT_INDENT="   "
 DIRECTION="UP"
+FILE=""
 
 function usage()
 {
@@ -9,8 +10,9 @@ function usage()
 
 The script prints network devices hierarchy as a tree view.
 Possible arguments:
-   -u     prints tree from bottom to up (default). Physical devices are roots of the tree.
-   -d     prints tree from up to bottom. Logica, devices are roots of the tree.
+   -u        prints tree from bottom to up (default). Physical devices are roots of the tree.
+   -d        prints tree from up to bottom. Logica, devices are roots of the tree.
+   -f <file> use this file as an input file instead of parsing localy "ip -o link" command.
 
 USAGEEND
 }
@@ -37,28 +39,28 @@ function printup()
    done
 }
 
-while [ ! -z "$1" ]
-do
-    case "$1" in
-        -d) DIRECTION=DOWN
+while getopts "duhf:" option; do
+    case "$option" in
+        d) DIRECTION=DOWN
             ;;
-        -u) DIRECTION=UP
+        u) DIRECTION=UP
             ;;
-        -h) usage
+        f) fileflag=1 ;
+           FILE=${OPTARG} 
+            ;;
+        h) usage
             exit 0 
             ;;
-         *) usage
-            exit 1
-            ;;
+        *) usage
+           exit 1
+           ;;
    esac
-   shift
 done
 
 declare -A devicesup
 declare -A devicesdown
 while read line
 do
-   #echo "XX $line"
    dev=${line#*: }
    dev=${dev%%:*}
    devicesup[$dev]=""
@@ -74,7 +76,7 @@ do
       devicesdown[$master]="${devicesdown[$master]} $dev"
 
    fi
-done < <(ip -o link)
+done < <( if [ $fileflag ] ; then cat $FILE |grep BROADCAST ; else ip -o link ; fi )
 
 if [ "$DIRECTION" == "UP" ]
 then
